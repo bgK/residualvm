@@ -91,7 +91,6 @@ public:
 	ResourceDescriptionArray listFilesMatching(const Common::String &room, uint32 index, ResourceType type);
 
 	Common::SeekableReadStream *dumpToMemory(uint32 offset, uint32 size);
-	uint32 copyTo(uint32 offset, uint32 size, Common::WriteStream &out);
 	void visit(ArchiveVisitor &visitor);
 
 	const Common::String &getRoomName() const { return _roomName; }

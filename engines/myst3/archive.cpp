@@ -188,12 +188,6 @@ Common::SeekableReadStream *Archive::dumpToMemory(uint32 offset, uint32 size) {
 	return new Common::MemoryReadStream(data, size, DisposeAfterUse::YES);
 }
 
-uint32 Archive::copyTo(uint32 offset, uint32 size, Common::WriteStream &out) {
-	Common::SeekableSubReadStream subStream(_file, offset, offset + size);
-	subStream.seek(0);
-	return out.writeStream(&subStream);
-}
-
 const Archive::DirectoryEntry *Archive::getEntry(const Common::String &room, uint32 index) const {
 	for (uint i = 0; i < _directory.size(); i++) {
 		const DirectoryEntry &entry = _directory[i];

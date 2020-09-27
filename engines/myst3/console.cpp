@@ -352,7 +352,10 @@ public:
 		if (!outFile.open(fileName, true))
 			error("Unable to open file '%s' for writing", fileName.c_str());
 
-		_archive->copyTo(directorySubEntry.offset, directorySubEntry.size, outFile);
+		Common::SeekableReadStream *memoryStream = _archive->dumpToMemory(directorySubEntry.offset, directorySubEntry.size);
+		outFile.writeStream(memoryStream);
+		delete memoryStream;
+
 		outFile.close();
 	}
 
