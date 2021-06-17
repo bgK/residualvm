@@ -458,6 +458,8 @@ void ArchiveWriter::writeFiles(Common::SeekableWriteStream &outStream) {
 				error("Unable to open file '%s'", directorySubEntry.filename.c_str());
 			}
 
+			directorySubEntry.offset = outStream.pos();
+
 			if (directorySubEntry.compress) {
 				uint uncompressedSize = readStream->size();
 				byte *uncompressed = new byte[uncompressedSize];
@@ -473,8 +475,6 @@ void ArchiveWriter::writeFiles(Common::SeekableWriteStream &outStream) {
 				}
 
 				delete[] uncompressed;
-
-				directorySubEntry.offset = outStream.pos();
 
 				outStream.writeUint32LE(kLZO1X);
 				outStream.writeUint32LE(uncompressedSize);
