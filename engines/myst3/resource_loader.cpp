@@ -248,26 +248,32 @@ ResourceDescriptionArray ResourceLoader::listSpotItemImages(const Common::String
 	return resources;
 }
 
-Common::String ResourceLoader::computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
-                                                        const Archive::DirectorySubEntry &directorySubEntry) {
-	return computeExtractedFileName(directoryEntry, directorySubEntry, "jpg", "data", "dds");
-}
-
-Common::String ResourceLoader::computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
-                                                        const Archive::DirectorySubEntry &directorySubEntry,
-                                                        const char *imagesFileExtension,
-                                                        const char *cursorFileExtension,
-                                                        const char *moddedImagesFileExtension) {
-	bool multipleSubEntriesWithSameKey = false;
+bool ResourceLoader::checkForSubentriesSharingSameKey(const Archive::DirectoryEntry &directoryEntry,
+                                                      const Archive::DirectorySubEntry &directorySubEntry) {
 	for (uint i = 0; i < directoryEntry.subentries.size(); i++) {
 		const Archive::DirectorySubEntry &otherSubEntry = directoryEntry.subentries[i];
 		if (otherSubEntry.type == directorySubEntry.type
 		        && otherSubEntry.face == directorySubEntry.face
 		        && otherSubEntry.offset != directorySubEntry.offset) {
-			multipleSubEntriesWithSameKey = true;
+			return true;
 		}
 	}
 
+	return false;
+}
+
+Common::String ResourceLoader::computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
+                                                        const Archive::DirectorySubEntry &directorySubEntry,
+                                                        bool multipleSubEntriesWithSameKey) {
+	return computeExtractedFileName(directoryEntry, directorySubEntry, multipleSubEntriesWithSameKey, "jpg", "data", "dds");
+}
+
+Common::String ResourceLoader::computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
+                                                        const Archive::DirectorySubEntry &directorySubEntry,
+                                                        bool multipleSubEntriesWithSameKey,
+                                                        const char *imagesFileExtension,
+                                                        const char *cursorFileExtension,
+                                                        const char *moddedImagesFileExtension) {
 	bool printFace = true;
 	Common::String extension;
 	switch (directorySubEntry.type) {
@@ -398,14 +404,15 @@ Texture *TextureLoader::load(const ResourceDescription &resource, TextureLoader:
 	Common::String name = Common::String::format("%s-%d-%d", resource.room().c_str(), resource.index(), resource.face());
 
 	if (_loadExternalFiles) {
-		name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), "dds", "dds", "dds");
+		bool multipleSubEntriesWithSameKey = ResourceLoader::checkForSubentriesSharingSameKey(resource.directoryEntry(), resource.directorySubEntry());
+		name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), multipleSubEntriesWithSameKey, "dds", "dds", "dds");
 		imageStream = openFile(name);
 		if (imageStream) {
 			imageFormat = kImageFormatDDS;
 		}
 
 		if (!imageStream) {
-			name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), "png", "png", "png");
+			name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), multipleSubEntriesWithSameKey, "png", "png", "png");
 			imageStream = openFile(name);
 			if (imageStream) {
 				imageFormat = kImageFormatPNG;
@@ -413,7 +420,7 @@ Texture *TextureLoader::load(const ResourceDescription &resource, TextureLoader:
 		}
 
 		if (!imageStream) {
-			name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), "jpg", "jpg", "jpg");
+			name = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), multipleSubEntriesWithSameKey, "jpg", "jpg", "jpg");
 			imageStream = openFile(name);
 			if (imageStream) {
 				imageFormat = kImageFormatJPEG;
@@ -527,7 +534,8 @@ VideoLoader::VideoLoader() :
 Common::SeekableReadStream *VideoLoader::load(const ResourceDescription &resource) {
 	Common::SeekableReadStream *binkStream = nullptr;
 	if (_loadExternalFiles) {
-		Common::String extractedFileName = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry());
+		bool multipleSubEntriesWithSameKey = ResourceLoader::checkForSubentriesSharingSameKey(resource.directoryEntry(), resource.directorySubEntry());
+		Common::String extractedFileName = ResourceLoader::computeExtractedFileName(resource.directoryEntry(), resource.directorySubEntry(), multipleSubEntriesWithSameKey);
 		debugC(kDebugModding, "Attempting to load external file '%s'", extractedFileName.c_str());
 		binkStream = SearchMan.createReadStreamForMember(extractedFileName);
 		if (binkStream) {

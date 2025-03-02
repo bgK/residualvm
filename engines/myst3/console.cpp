@@ -345,7 +345,8 @@ public:
 	}
 
 	void visitDirectorySubEntry(Archive::DirectoryEntry &directoryEntry, Archive::DirectorySubEntry &directorySubEntry) override {
-		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, directorySubEntry);
+		bool multipleSubEntriesWithSameKey = ResourceLoader::checkForSubentriesSharingSameKey(directoryEntry, directorySubEntry);
+		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, directorySubEntry, multipleSubEntriesWithSameKey);
 		if (fileName.empty()) return;
 
 		debug("Extracted %s", fileName.c_str());
@@ -446,7 +447,8 @@ public:
 		Archive::DirectorySubEntry moddedDirectorySubEntry = directorySubEntry;
 		moddedDirectorySubEntry.type = moddedType;
 
-		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, moddedDirectorySubEntry);
+		bool multipleSubEntriesWithSameKey = ResourceLoader::checkForSubentriesSharingSameKey(directoryEntry, directorySubEntry);
+		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, moddedDirectorySubEntry, multipleSubEntriesWithSameKey);
 		if (fileName.empty()) return;
 
 		Common::FSNode extractedFile = Common::FSNode(fileName);
@@ -581,7 +583,8 @@ public:
 			return;
 		}
 
-		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, directorySubEntry);
+		bool multipleSubEntriesWithSameKey = ResourceLoader::checkForSubentriesSharingSameKey(directoryEntry, directorySubEntry);
+		Common::String fileName = ResourceLoader::computeExtractedFileName(directoryEntry, directorySubEntry, multipleSubEntriesWithSameKey);
 		if (fileName.empty()) return;
 
 		debug("Analysed %s", fileName.c_str());

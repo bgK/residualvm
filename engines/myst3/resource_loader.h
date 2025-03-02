@@ -59,10 +59,15 @@ public:
 	ResourceDescription getRawData(const Common::String &room, uint16 id) const;
 	ResourceDescriptionArray listSpotItemImages(const Common::String &room, uint16 spotItemId) const;
 
-	static Common::String computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
-	                                               const Archive::DirectorySubEntry &directorySubEntry);
+	static bool checkForSubentriesSharingSameKey(const Archive::DirectoryEntry &directoryEntry,
+	                                             const Archive::DirectorySubEntry &directorySubEntry);
+
 	static Common::String computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
 	                                               const Archive::DirectorySubEntry &directorySubEntry,
+	                                               bool multipleSubEntriesWithSameKey);
+	static Common::String computeExtractedFileName(const Archive::DirectoryEntry &directoryEntry,
+	                                               const Archive::DirectorySubEntry &directorySubEntry,
+	                                               bool multipleSubEntriesWithSameKey,
 	                                               const char *imagesFileExtension,
 	                                               const char *cursorFileExtension,
 	                                               const char *moddedImagesFileExtension);
